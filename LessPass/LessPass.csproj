@@ -114,6 +114,7 @@
     <Content Include="Assets\Fonts\Inconsolata-Regular.ttf" />
     <None Include="LessPass_TemporaryKey.pfx" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\fr-FR\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />
@@ -147,9 +148,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Strings\fr-FR\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

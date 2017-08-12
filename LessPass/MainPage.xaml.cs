@@ -25,6 +25,10 @@ namespace LessPass
         {
             if (acrylicSprite != null)
                 acrylicSprite.Size = e.NewSize.ToVector2();
+
+            // Apparently the app bar button's width is 40
+            // https://msdn.microsoft.com/en-us/library/windows/apps/xaml/dn481531.aspx?f=255&MSPPError=-2147217396
+            LengthSlider.Width = e.NewSize.Width - 40;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
