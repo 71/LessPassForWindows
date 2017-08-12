@@ -123,7 +123,7 @@
   <data name="Algorithm.Label" xml:space="preserve">
     <value>Algorithm</value>
   </data>
-  <data name="AlgorithmFlyout.Header" xml:space="preserve">
+  <data name="AlgorithmFlyout.Text" xml:space="preserve">
     <value>Algorithm used to generate your password.</value>
   </data>
   <data name="CharsetError/Content" xml:space="preserve">
@@ -137,6 +137,9 @@
   </data>
   <data name="Contact.Text" xml:space="preserve">
     <value>Contact the author</value>
+  </data>
+  <data name="Copy.Label" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="Counter.Label" xml:space="preserve">
     <value>Counter</value>
@@ -161,6 +164,9 @@
   </data>
   <data name="IterationsFlyout.Header" xml:space="preserve">
     <value>Number of iterations to perform.</value>
+  </data>
+  <data name="LengthTooltip.Text" xml:space="preserve">
+    <value>Password length</value>
   </data>
   <data name="Login.PlaceholderText" xml:space="preserve">
     <value>Login</value>

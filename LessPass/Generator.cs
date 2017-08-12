@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
@@ -22,6 +21,7 @@ namespace LessPass
         public enum Algorithms
         {
             Sha256,
+            Sha384,
             Sha512
         }
 
@@ -115,6 +115,9 @@ namespace LessPass
             {
                 case Algorithms.Sha256:
                     algorithm = KeyDerivationAlgorithmNames.Pbkdf2Sha256;
+                    break;
+                case Algorithms.Sha384:
+                    algorithm = KeyDerivationAlgorithmNames.Pbkdf2Sha384;
                     break;
                 case Algorithms.Sha512:
                     algorithm = KeyDerivationAlgorithmNames.Pbkdf2Sha512;

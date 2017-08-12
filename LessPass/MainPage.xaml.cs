@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Email;
 using Windows.ApplicationModel.Resources;
 using Windows.System;
@@ -9,7 +10,9 @@ using Windows.UI.Composition;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Media;
 
 namespace LessPass
 {
@@ -27,8 +30,12 @@ namespace LessPass
                 acrylicSprite.Size = e.NewSize.ToVector2();
 
             // Apparently the app bar button's width is 40
+            // We have two buttons, plus a margin of 30 on each side
+            // + 36 because my calculations suck
             // https://msdn.microsoft.com/en-us/library/windows/apps/xaml/dn481531.aspx?f=255&MSPPError=-2147217396
-            LengthSlider.Width = e.NewSize.Width - 40;
+            const int MinusWidth = (40 * 2) + (30 * 2) + 36;
+
+            LengthSlider.Width = e.NewSize.Width - MinusWidth;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -45,20 +52,31 @@ namespace LessPass
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
 
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
+            formattableTitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
 
             coreTitleBar.LayoutMetricsChanged += OnLayoutMetricsChanged;
             coreTitleBar.ExtendViewIntoTitleBar = true;
+
+            Window.Current.SetTitleBar(MainTitleBar);
+
+            RevealChecked(RevealButton, null);
         }
 
         private void OnLayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
         {
             Thickness padding = InputPanel.Padding;
-            padding.Top = sender.Height;
+
             padding.Bottom = sender.Height;
 
             InputPanel.Padding = padding;
+
+            RevealButton.Height = sender.Height;
+
+            MainTitleBar.Height = sender.Height;
+            MainTitleBar.Width  = CoreApplication.GetCurrentView().CoreWindow.Bounds.Width - sender.SystemOverlayLeftInset - sender.SystemOverlayRightInset;
+            MainTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, 0, sender.SystemOverlayRightInset, 0);
         }
         #endregion
 
@@ -165,28 +183,46 @@ namespace LessPass
 
         public bool IsValid => Website.Length != 0 && Username.Length != 0 && MasterPassword.Length != 0;
 
+        private Generator.Algorithms algorithm;
+
         public MainPage()
         {
             InitializeComponent();
 
             ElementSoundPlayer.State = ElementSoundPlayerState.On;
+
+            Application.Current.Resources["ToggleButtonBackgroundChecked"] = new SolidColorBrush(Colors.Transparent);
+            Application.Current.Resources["ToggleButtonBackgroundCheckedPointerOver"] = new SolidColorBrush(Colors.Transparent);
+            Application.Current.Resources["ToggleButtonBackgroundCheckedPressed"] = new SolidColorBrush(Colors.Transparent);
         }
 
         #region Event handlers
         private void OnPasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (!IsValid)
-                return;
-
-            GeneratedPassword = GetGeneratedPassword();
+            if (IsValid)
+            {
+                GeneratedPassword = GetGeneratedPassword();
+                CopyButton.IsEnabled = true;
+            }
+            else
+            {
+                GeneratedPassword = string.Empty;
+                CopyButton.IsEnabled = false;
+            }
         }
 
         private void OnInputChanged(object sender, TextChangedEventArgs e)
         {
-            if (!IsValid)
-                return;
-
-            GeneratedPassword = GetGeneratedPassword();
+            if (IsValid)
+            {
+                GeneratedPassword = GetGeneratedPassword();
+                CopyButton.IsEnabled = true;
+            }
+            else
+            {
+                GeneratedPassword = string.Empty;
+                CopyButton.IsEnabled = false;
+            }
         }
 
         private string GetGeneratedPassword()
@@ -223,7 +259,7 @@ namespace LessPass
             }
 
             return Generator.Generate(MasterPassword, salt, charSets,
-                digest: (Generator.Algorithms)AlgorithmCombo.SelectedIndex,
+                digest: algorithm,
                 length: GeneratedPasswordLength,
                 iterations: (uint)Iterations);
         }
@@ -261,6 +297,30 @@ namespace LessPass
         private void NunitoClick(object sender, RoutedEventArgs e)
         {
             Launcher.LaunchUriAsync(new Uri("https://fonts.google.com/specimen/Nunito"));
+        }
+
+        private void CopyClick(object sender, RoutedEventArgs e)
+        {
+            DataPackage data = new DataPackage();
+
+            data.SetText(GeneratedPassword);
+
+            Clipboard.SetContent(data);
+        }
+
+        private void AlgorithmChecked(object sender, RoutedEventArgs e)
+        {
+            algorithm = (Generator.Algorithms)int.Parse(((RadioButton)sender).Tag.ToString());
+
+            OnPasswordChanged(sender, null);
+        }
+
+        private void RevealChecked(object sender, RoutedEventArgs e)
+        {
+            bool isChecked = ((ToggleButton)sender).IsChecked.Value;
+
+            ResultBlock.Visibility = isChecked ? Visibility.Visible : Visibility.Collapsed;
+            RevealIcon.Glyph = (isChecked ? '\uEE65' : '\uEC20').ToString();
         }
     }
 }

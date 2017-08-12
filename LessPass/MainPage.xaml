@@ -39,17 +39,26 @@
     </Page.Resources>
 
     <Grid SizeChanged="OnSizeChanged" Loaded="OnLoaded">
+        
         <RelativePanel x:Name="BackgroundGrid" />
 
-        <Grid Background="#99000000">
+        <!-- Useless element there to nicely replace the title bar -->
+        <Border x:Name="MainTitleBar" />
+
+        <Grid Background="#88000000">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" MinHeight="100" />
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="#FFFFFF">
-                <composition:CompositionShadow Color="Black" OffsetX="0" OffsetY="10" ShadowOpacity="0.6" BlurRadius="20">
-                    <StackPanel x:Name="InputPanel">
+                <composition:CompositionShadow Color="Black" OffsetX="0" OffsetY="0" ShadowOpacity="0.6" BlurRadius="30">
+                    <StackPanel Background="#66FFFFFF" x:Name="InputPanel">
+                        <ToggleButton x:Name="RevealButton" Width="100" Checked="RevealChecked" Unchecked="RevealChecked"
+                                      Background="Transparent" IsChecked="False">
+                            <FontIcon x:Name="RevealIcon" />
+                        </ToggleButton>
+
                         <TextBox Text="{x:Bind Website, Mode=TwoWay}" TextChanged="OnInputChanged"
                                  Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
                         <TextBox Text="{x:Bind Username, Mode=TwoWay}" TextChanged="OnInputChanged"
@@ -61,7 +70,7 @@
             </Border>
             
             <TextBlock Text="{x:Bind GeneratedPassword, Mode=OneWay}"
-                       FontSize="36" Grid.Row="1"
+                       FontSize="36" Grid.Row="1" x:Name="ResultBlock"
                        VerticalAlignment="Center" HorizontalAlignment="Center"
                        FontFamily="Assets/Fonts/Inconsolata-Regular.ttf#Inconsolata"
                        IsTextSelectionEnabled="True" FontStretch="Expanded" />
@@ -70,6 +79,9 @@
 
     <Page.BottomAppBar>
         <CommandBar IsDynamicOverflowEnabled="False">
+            <AppBarButton x:Uid="Copy" x:Name="CopyButton" Icon="Copy" Click="CopyClick"
+                          IsEnabled="False" />
+
             <CommandBar.SecondaryCommands>
                 <AppBarToggleButton Label="a-z" IsChecked="{x:Bind EnableLowercase, Mode=TwoWay}" />
                 <AppBarToggleButton Label="A-Z" IsChecked="{x:Bind EnableUppercase, Mode=TwoWay}" />
@@ -89,7 +101,7 @@
                 <AppBarButton x:Uid="Iterations">
                     <AppBarButton.Flyout>
                         <Flyout>
-                            <Slider Minimum="1" Maximum="1000000" StepFrequency="1000"
+                            <Slider Minimum="1" Maximum="1000000" StepFrequency="10000"
                                     Value="{x:Bind Iterations, Mode=TwoWay}" x:Uid="IterationsFlyout" />
                         </Flyout>
                     </AppBarButton.Flyout>
@@ -97,10 +109,12 @@
                 <AppBarButton x:Uid="Algorithm">
                     <AppBarButton.Flyout>
                         <Flyout>
-                            <ComboBox x:Name="AlgorithmCombo" SelectedIndex="0" x:Uid="AlgorithmFlyout">
-                                <ComboBoxItem Content="SHA256" />
-                                <ComboBoxItem Content="SHA512" />
-                            </ComboBox>
+                            <StackPanel>
+                                <TextBlock x:Uid="AlgorithmFlyout" />
+                                <RadioButton GroupName="Algorithms" Tag="0" Content="SHA256" Checked="AlgorithmChecked" IsChecked="True" />
+                                <RadioButton GroupName="Algorithms" Tag="1" Content="SHA384" Checked="AlgorithmChecked" />
+                                <RadioButton GroupName="Algorithms" Tag="2" Content="SHA512" Checked="AlgorithmChecked" />
+                            </StackPanel>
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
@@ -119,16 +133,19 @@
                                 <MenuFlyoutItem Text="Inconsolata" Click="InconsolataClick" />
                                 <MenuFlyoutItem Text="Nunito" Click="NunitoClick" />
                             </MenuFlyoutSubItem>
-                            
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
 
             <CommandBar.Content>
-                <Slider Minimum="6" Maximum="42" Value="{x:Bind GeneratedPasswordLength, Mode=TwoWay}"
+                <Slider Minimum="6" Maximum="42" StepFrequency="1" Value="{x:Bind GeneratedPasswordLength, Mode=TwoWay}"
                         Margin="30 5 30 0" Height="{StaticResource AppBarThemeCompactHeight}"
-                        x:Name="LengthSlider" />
+                        x:Name="LengthSlider" ToolTipService.Placement="Top">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="LengthTooltip" />
+                    </ToolTipService.ToolTip>
+                </Slider>
             </CommandBar.Content>
         </CommandBar>
     </Page.BottomAppBar>
