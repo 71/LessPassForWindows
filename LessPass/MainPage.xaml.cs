@@ -88,7 +88,7 @@ namespace LessPass
         }
 
         public static readonly DependencyProperty WebsiteProperty =
-            DependencyProperty.Register("Website", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register("Website", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
 
         public string Username
         {
@@ -97,7 +97,7 @@ namespace LessPass
         }
 
         public static readonly DependencyProperty UsernameProperty =
-            DependencyProperty.Register("Username", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register("Username", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
 
         public string MasterPassword
         {
@@ -106,7 +106,7 @@ namespace LessPass
         }
 
         public static readonly DependencyProperty MasterPasswordProperty =
-            DependencyProperty.Register("MasterPassword", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register("MasterPassword", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
 
         public string GeneratedPassword
         {
@@ -197,7 +197,7 @@ namespace LessPass
         }
 
         #region Event handlers
-        private void OnPasswordChanged(object sender, RoutedEventArgs e)
+        private void OnInputChanged()
         {
             if (IsValid)
             {
@@ -211,18 +211,9 @@ namespace LessPass
             }
         }
 
-        private void OnInputChanged(object sender, TextChangedEventArgs e)
+        private static void OnPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (IsValid)
-            {
-                GeneratedPassword = GetGeneratedPassword();
-                CopyButton.IsEnabled = true;
-            }
-            else
-            {
-                GeneratedPassword = string.Empty;
-                CopyButton.IsEnabled = false;
-            }
+            (sender as MainPage)?.OnInputChanged();
         }
 
         private string GetGeneratedPassword()
@@ -263,11 +254,6 @@ namespace LessPass
                 length: GeneratedPasswordLength,
                 iterations: (uint)Iterations);
         }
-
-        private static void OnPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-        {
-            (sender as MainPage)?.OnPasswordChanged(sender, null);
-        }
         #endregion
 
         private void GitHubClick(object sender, RoutedEventArgs e)
@@ -299,6 +285,11 @@ namespace LessPass
             Launcher.LaunchUriAsync(new Uri("https://fonts.google.com/specimen/Nunito"));
         }
 
+        private void InspiredByClick(object sender, RoutedEventArgs e)
+        {
+            Launcher.LaunchUriAsync(new Uri("https://lesspass.com"));
+        }
+
         private void CopyClick(object sender, RoutedEventArgs e)
         {
             DataPackage data = new DataPackage();
@@ -312,7 +303,7 @@ namespace LessPass
         {
             algorithm = (Generator.Algorithms)int.Parse(((RadioButton)sender).Tag.ToString());
 
-            OnPasswordChanged(sender, null);
+            OnInputChanged();
         }
 
         private void RevealChecked(object sender, RoutedEventArgs e)

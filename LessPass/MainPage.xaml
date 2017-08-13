@@ -55,15 +55,19 @@
                 <composition:CompositionShadow Color="Black" OffsetX="0" OffsetY="0" ShadowOpacity="0.6" BlurRadius="30">
                     <StackPanel Background="#66FFFFFF" x:Name="InputPanel">
                         <ToggleButton x:Name="RevealButton" Width="100" Checked="RevealChecked" Unchecked="RevealChecked"
-                                      Background="Transparent" IsChecked="False">
+                                      Background="Transparent" IsChecked="False" ToolTipService.Placement="Bottom">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="ToggleTooltip" />
+                            </ToolTipService.ToolTip>
+
                             <FontIcon x:Name="RevealIcon" />
                         </ToggleButton>
 
-                        <TextBox Text="{x:Bind Website, Mode=TwoWay}" TextChanged="OnInputChanged"
+                        <TextBox Text="{x:Bind Website, Mode=TwoWay}"
                                  Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
-                        <TextBox Text="{x:Bind Username, Mode=TwoWay}" TextChanged="OnInputChanged"
+                        <TextBox Text="{x:Bind Username, Mode=TwoWay}"
                                  Style="{StaticResource InputText}" x:Uid="Login" InputScope="EmailNameOrAddress" />
-                        <PasswordBox Password="{x:Bind MasterPassword, Mode=TwoWay}" PasswordChanged="OnPasswordChanged"
+                        <PasswordBox Password="{x:Bind MasterPassword, Mode=TwoWay}"
                                      PasswordRevealMode="Peek" Style="{StaticResource InputPassword}" x:Uid="Password" />
                     </StackPanel>
                 </composition:CompositionShadow>
@@ -136,6 +140,7 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
+                <AppBarButton x:Uid="InspiredBy" Click="InspiredByClick" />
             </CommandBar.SecondaryCommands>
 
             <CommandBar.Content>

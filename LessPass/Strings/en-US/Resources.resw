@@ -159,6 +159,9 @@
   <data name="Informations.Label" xml:space="preserve">
     <value>Informations</value>
   </data>
+  <data name="InspiredBy.Label" xml:space="preserve">
+    <value>Inspired by lesspass</value>
+  </data>
   <data name="Iterations.Label" xml:space="preserve">
     <value>Iterations</value>
   </data>
@@ -176,6 +179,9 @@
   </data>
   <data name="Source.Text" xml:space="preserve">
     <value>Source code</value>
+  </data>
+  <data name="ToggleTooltip.Text" xml:space="preserve">
+    <value>Toggle password visibility</value>
   </data>
   <data name="Website.PlaceholderText" xml:space="preserve">
     <value>Website</value>
