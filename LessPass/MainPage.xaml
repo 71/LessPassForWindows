@@ -63,11 +63,11 @@
                             <FontIcon x:Name="RevealIcon" />
                         </ToggleButton>
 
-                        <TextBox Text="{x:Bind Website, Mode=TwoWay}"
+                        <TextBox TextChanged="WebsiteChanged"
                                  Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
-                        <TextBox Text="{x:Bind Username, Mode=TwoWay}"
+                        <TextBox TextChanged="UsernameChanged"
                                  Style="{StaticResource InputText}" x:Uid="Login" InputScope="EmailNameOrAddress" />
-                        <PasswordBox Password="{x:Bind MasterPassword, Mode=TwoWay}"
+                        <PasswordBox PasswordChanged="PasswordChanged"
                                      PasswordRevealMode="Peek" Style="{StaticResource InputPassword}" x:Uid="Password" />
                     </StackPanel>
                 </composition:CompositionShadow>
@@ -115,9 +115,12 @@
                         <Flyout>
                             <StackPanel>
                                 <TextBlock x:Uid="AlgorithmFlyout" />
-                                <RadioButton GroupName="Algorithms" Tag="0" Content="SHA256" Checked="AlgorithmChecked" IsChecked="True" />
-                                <RadioButton GroupName="Algorithms" Tag="1" Content="SHA384" Checked="AlgorithmChecked" />
-                                <RadioButton GroupName="Algorithms" Tag="2" Content="SHA512" Checked="AlgorithmChecked" />
+                                <RadioButton GroupName="Algorithms" Tag="0" Content="SHA256" x:Name="Sha256Radio"
+                                             Checked="AlgorithmChecked" />
+                                <RadioButton GroupName="Algorithms" Tag="1" Content="SHA384" x:Name="Sha384Radio"
+                                             Checked="AlgorithmChecked" />
+                                <RadioButton GroupName="Algorithms" Tag="2" Content="SHA512" x:Name="Sha512Radio"
+                                             Checked="AlgorithmChecked" />
                             </StackPanel>
                         </Flyout>
                     </AppBarButton.Flyout>

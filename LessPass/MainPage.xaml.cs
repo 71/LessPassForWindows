@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Email;
 using Windows.ApplicationModel.Resources;
+using Windows.Storage;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -21,6 +24,8 @@ namespace LessPass
     /// </summary>
     public sealed partial class MainPage
     {
+        public static MainPage Instance;
+
         #region Acrylic logic
         private SpriteVisual acrylicSprite;
 
@@ -81,33 +86,6 @@ namespace LessPass
         #endregion
 
         #region Dependency properties
-        public string Website
-        {
-            get => (string)GetValue(WebsiteProperty);
-            set => SetValue(WebsiteProperty, value);
-        }
-
-        public static readonly DependencyProperty WebsiteProperty =
-            DependencyProperty.Register("Website", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
-
-        public string Username
-        {
-            get => (string)GetValue(UsernameProperty);
-            set => SetValue(UsernameProperty, value);
-        }
-
-        public static readonly DependencyProperty UsernameProperty =
-            DependencyProperty.Register("Username", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
-
-        public string MasterPassword
-        {
-            get => (string)GetValue(MasterPasswordProperty);
-            set => SetValue(MasterPasswordProperty, value);
-        }
-
-        public static readonly DependencyProperty MasterPasswordProperty =
-            DependencyProperty.Register("MasterPassword", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty, OnPropertyChanged));
-
         public string GeneratedPassword
         {
             get => (string)GetValue(GeneratedPasswordProperty);
@@ -181,13 +159,21 @@ namespace LessPass
             DependencyProperty.Register("Iterations", typeof(int), typeof(MainPage), new PropertyMetadata(100_000, OnPropertyChanged));
         #endregion
 
-        public bool IsValid => Website.Length != 0 && Username.Length != 0 && MasterPassword.Length != 0;
+        public bool IsValid => website.Length != 0 && username.Length != 0 && password.Length != 0;
 
-        private Generator.Algorithms algorithm;
+        private Generator.Algorithms algorithm = Generator.Algorithms.Sha256;
+        private string username = "";
+        private string website = "";
+        private string password = "";
+
+        private Task<string> updateTask;
+        private CancellationTokenSource cts;
 
         public MainPage()
         {
             InitializeComponent();
+
+            Instance = this;
 
             ElementSoundPlayer.State = ElementSoundPlayerState.On;
 
@@ -201,7 +187,7 @@ namespace LessPass
         {
             if (IsValid)
             {
-                GeneratedPassword = GetGeneratedPassword();
+                UpdateGeneratedPassword();
                 CopyButton.IsEnabled = true;
             }
             else
@@ -211,14 +197,46 @@ namespace LessPass
             }
         }
 
+        private void UsernameChanged(object sender, TextChangedEventArgs e)
+        {
+            // ReSharper disable once PossibleNullReferenceException
+            username = (sender as TextBox).Text;
+
+            OnInputChanged();
+        }
+
+        private void WebsiteChanged(object sender, TextChangedEventArgs e)
+        {
+            // ReSharper disable once PossibleNullReferenceException
+            website = (sender as TextBox).Text;
+
+            OnInputChanged();
+        }
+
+        private void PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            // ReSharper disable once PossibleNullReferenceException
+            password = (sender as PasswordBox).Password;
+
+            OnInputChanged();
+        }
+
         private static void OnPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             (sender as MainPage)?.OnInputChanged();
         }
 
-        private string GetGeneratedPassword()
+        private void UpdateGeneratedPassword()
         {
-            string salt = string.Concat(Website, Username, Counter.ToString("X"));
+            if (cts != null && updateTask.Status != TaskStatus.RanToCompletion)
+            {
+                cts.Cancel();
+                cts.Dispose();
+            }
+
+            cts = new CancellationTokenSource();
+
+            string salt = string.Concat(website, username, Counter.ToString("X"));
 
             Generator.CharSets charSets = Generator.CharSets.None;
 
@@ -246,13 +264,19 @@ namespace LessPass
                 };
 
                 dialog.ShowAsync();
-                return GeneratedPassword;
             }
 
-            return Generator.Generate(MasterPassword, salt, charSets,
-                digest: algorithm,
-                length: GeneratedPasswordLength,
-                iterations: (uint)Iterations);
+            updateTask = Generator.GenerateAsync(password, salt, charSets,
+                                                 digest: algorithm,
+                                                 length: GeneratedPasswordLength,
+                                                 iterations: (uint)Iterations,
+                                                 cancellationToken: cts.Token);
+
+            updateTask.ConfigureAwait(true).GetAwaiter().OnCompleted(() =>
+                {
+                    if (updateTask.Status == TaskStatus.RanToCompletion)
+                        GeneratedPassword = updateTask.Result;
+                });
         }
         #endregion
 
@@ -308,10 +332,73 @@ namespace LessPass
 
         private void RevealChecked(object sender, RoutedEventArgs e)
         {
+            // ReSharper disable once PossibleInvalidOperationException
             bool isChecked = ((ToggleButton)sender).IsChecked.Value;
 
             ResultBlock.Visibility = isChecked ? Visibility.Visible : Visibility.Collapsed;
             RevealIcon.Glyph = (isChecked ? '\uEE65' : '\uEC20').ToString();
+        }
+
+        public void SaveState(ApplicationDataContainer data)
+        {
+            data.Values[nameof(algorithm)] = (int)algorithm;
+            data.Values[nameof(GeneratedPasswordLength)] = GeneratedPasswordLength;
+            data.Values[nameof(Iterations)] = Iterations;
+            data.Values[nameof(EnableLowercase)] = EnableLowercase;
+            data.Values[nameof(EnableUppercase)] = EnableUppercase;
+            data.Values[nameof(EnableNumbers)] = EnableNumbers;
+            data.Values[nameof(EnableSymbols)] = EnableSymbols;
+
+            data.Values[nameof(Counter)] = Counter;
+            data.Values[nameof(RevealChecked)] = RevealButton.IsChecked;
+        }
+
+        public void LoadState(ApplicationDataContainer data)
+        {
+            if (data.Values.ContainsKey(nameof(algorithm)))
+            {
+                algorithm = (Generator.Algorithms)(int)data.Values[nameof(algorithm)];
+                GeneratedPasswordLength = (int)data.Values[nameof(GeneratedPasswordLength)];
+                Iterations = (int)data.Values[nameof(Iterations)];
+                EnableLowercase = (bool)data.Values[nameof(EnableLowercase)];
+                EnableUppercase = (bool)data.Values[nameof(EnableUppercase)];
+                EnableNumbers = (bool)data.Values[nameof(EnableNumbers)];
+                EnableSymbols = (bool)data.Values[nameof(EnableSymbols)];
+                Counter = (int)data.Values[nameof(Counter)];
+
+                RevealButton.IsChecked = (bool)data.Values[nameof(RevealChecked)];
+            }
+            else
+            {
+                algorithm = Generator.Algorithms.Sha256;
+                GeneratedPasswordLength = 16;
+                Iterations = 100_000;
+                EnableLowercase = true;
+                EnableUppercase = true;
+                EnableNumbers = true;
+                EnableSymbols = true;
+                Counter = 1;
+
+                RevealButton.IsChecked = true;
+            }
+
+            switch (algorithm)
+            {
+                case Generator.Algorithms.Sha256:
+                    Sha256Radio.IsChecked = true;
+                    break;
+
+                case Generator.Algorithms.Sha384:
+                    Sha384Radio.IsChecked = true;
+                    break;
+
+                case Generator.Algorithms.Sha512:
+                    Sha512Radio.IsChecked = true;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

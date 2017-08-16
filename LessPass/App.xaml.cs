@@ -2,6 +2,7 @@
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -12,8 +13,10 @@ namespace LessPass
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    sealed partial class App
+    public sealed partial class App
     {
+        private readonly ApplicationDataContainer Settings;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -22,7 +25,11 @@ namespace LessPass
         {
             InitializeComponent();
             Suspending += OnSuspending;
+
+            Settings = ApplicationData.Current.RoamingSettings;
         }
+
+        public int GeneratedPasswordLength { get; set; }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -61,6 +68,9 @@ namespace LessPass
 
                 // Ensure the current window is active
                 Window.Current.Activate();
+
+                // Load settings
+                MainPage.Instance.LoadState(Settings);
             }
         }
 
@@ -82,10 +92,14 @@ namespace LessPass
         /// </summary>
         /// <param name="sender">The source of the suspend request.</param>
         /// <param name="e">Details about the suspend request.</param>
-        private static void OnSuspending(object sender, SuspendingEventArgs e)
+        private void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            // No state to save (that's kinda the point of the app)
-            e.SuspendingOperation.GetDeferral().Complete();
+            // Save the state
+            SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
+
+            MainPage.Instance.SaveState(Settings);
+
+            deferral.Complete();
         }
     }
 }

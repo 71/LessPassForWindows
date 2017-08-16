@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using Windows.Storage.Streams;
@@ -200,6 +202,13 @@ namespace LessPass
             uint keySize = 32, Algorithms digest = Algorithms.Sha256, int length = 16, uint iterations = 100_000)
         {
             return RenderPassword(sets, GenerateEntropy(password, salt, sets, keySize, digest, length, iterations), length);
+        }
+
+        public static Task<string> GenerateAsync(string password, string salt, CharSets sets = CharSets.All,
+            uint keySize = 32, Algorithms digest = Algorithms.Sha256, int length = 16, uint iterations = 100_000,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.Run(() => Generate(password, salt, sets, keySize, digest, length, iterations), cancellationToken);
         }
     }
 }
