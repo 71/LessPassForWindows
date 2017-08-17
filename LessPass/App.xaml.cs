@@ -64,7 +64,7 @@ namespace LessPass
                 }
 
                 // Resize window
-                ApplicationView.GetForCurrentView().SetPreferredMinSize(new Size(300, 800));
+                ApplicationView.GetForCurrentView().SetPreferredMinSize(new Size(300, 500));
 
                 // Ensure the current window is active
                 Window.Current.Activate();

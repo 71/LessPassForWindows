@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
@@ -9,13 +8,9 @@ using Windows.ApplicationModel.Resources;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Composition;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Hosting;
-using Windows.UI.Xaml.Media;
 
 namespace LessPass
 {
@@ -25,39 +20,28 @@ namespace LessPass
     public sealed partial class MainPage
     {
         public static MainPage Instance;
-
-        #region Acrylic logic
-        private SpriteVisual acrylicSprite;
-
+        
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (acrylicSprite != null)
-                acrylicSprite.Size = e.NewSize.ToVector2();
-
-            // Apparently the app bar button's width is 40
-            // We have two buttons, plus a margin of 30 on each side
-            // + 36 because my calculations suck
-            // https://msdn.microsoft.com/en-us/library/windows/apps/xaml/dn481531.aspx?f=255&MSPPError=-2147217396
-            const int MinusWidth = (40 * 2) + (30 * 2) + 36;
+            //// Apparently the app bar button's width is 40
+            //// We have two buttons, plus a margin of 30 on each side
+            //// + 36 because my calculations suck
+            //// https://msdn.microsoft.com/en-us/library/windows/apps/xaml/dn481531.aspx?f=255&MSPPError=-2147217396
+            const int MinusWidth = (40 * 2) + (30 * 2);
 
             LengthSlider.Width = e.NewSize.Width - MinusWidth;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            Compositor compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
-
-            acrylicSprite = compositor.CreateSpriteVisual();
-
-            ElementCompositionPreview.SetElementChildVisual(BackgroundGrid, acrylicSprite);
-
-            acrylicSprite.Size = new Vector2((float)BackgroundGrid.ActualWidth, (float)BackgroundGrid.ActualHeight);
-            acrylicSprite.Brush = compositor.CreateHostBackdropBrush();
-
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
 
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             formattableTitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            formattableTitleBar.ButtonForegroundColor = Colors.Black;
+            formattableTitleBar.ButtonInactiveForegroundColor = Colors.Black;
+            formattableTitleBar.ButtonHoverForegroundColor = Colors.White;
+            formattableTitleBar.ButtonPressedForegroundColor = Colors.White;
 
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
 
@@ -65,8 +49,6 @@ namespace LessPass
             coreTitleBar.ExtendViewIntoTitleBar = true;
 
             Window.Current.SetTitleBar(MainTitleBar);
-
-            RevealChecked(RevealButton, null);
         }
 
         private void OnLayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
@@ -80,10 +62,9 @@ namespace LessPass
             RevealButton.Height = sender.Height;
 
             MainTitleBar.Height = sender.Height;
-            MainTitleBar.Width  = CoreApplication.GetCurrentView().CoreWindow.Bounds.Width - sender.SystemOverlayLeftInset - sender.SystemOverlayRightInset;
+            MainTitleBar.Width = CoreApplication.GetCurrentView().CoreWindow.Bounds.Width - sender.SystemOverlayLeftInset - sender.SystemOverlayRightInset;
             MainTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, 0, sender.SystemOverlayRightInset, 0);
         }
-        #endregion
 
         #region Dependency properties
         public string GeneratedPassword
@@ -95,73 +76,74 @@ namespace LessPass
         public static readonly DependencyProperty GeneratedPasswordProperty =
             DependencyProperty.Register("GeneratedPassword", typeof(string), typeof(MainPage), new PropertyMetadata(string.Empty));
 
-        public int GeneratedPasswordLength
+        public double GeneratedPasswordLength
         {
-            get => (int)GetValue(GeneratedPasswordLengthProperty);
+            get => (double)GetValue(GeneratedPasswordLengthProperty);
             set => SetValue(GeneratedPasswordLengthProperty, value);
         }
 
         public static readonly DependencyProperty GeneratedPasswordLengthProperty =
-            DependencyProperty.Register("GeneratedPasswordLength", typeof(int), typeof(MainPage), new PropertyMetadata(16, OnPropertyChanged));
+            DependencyProperty.Register("GeneratedPasswordLength", typeof(double), typeof(MainPage), new PropertyMetadata(16.0, OnPropertyChanged));
 
-        public bool EnableLowercase
+        public bool? EnableLowercase
         {
-            get => (bool)GetValue(EnableLowercaseProperty);
+            get => (bool?)GetValue(EnableLowercaseProperty);
             set => SetValue(EnableLowercaseProperty, value);
         }
 
         public static readonly DependencyProperty EnableLowercaseProperty =
-            DependencyProperty.Register("EnableLowercase", typeof(bool), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
+            DependencyProperty.Register("EnableLowercase", typeof(bool?), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
 
-        public bool EnableUppercase
+        public bool? EnableUppercase
         {
-            get => (bool)GetValue(EnableUppercaseProperty);
+            get => (bool?)GetValue(EnableUppercaseProperty);
             set => SetValue(EnableUppercaseProperty, value);
         }
 
         public static readonly DependencyProperty EnableUppercaseProperty =
-            DependencyProperty.Register("EnableUppercase", typeof(bool), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
+            DependencyProperty.Register("EnableUppercase", typeof(bool?), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
 
-        public bool EnableNumbers
+        public bool? EnableNumbers
         {
-            get => (bool)GetValue(EnableNumbersProperty);
+            get => (bool?)GetValue(EnableNumbersProperty);
             set => SetValue(EnableNumbersProperty, value);
         }
 
         public static readonly DependencyProperty EnableNumbersProperty =
-            DependencyProperty.Register("EnableNumbers", typeof(bool), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
+            DependencyProperty.Register("EnableNumbers", typeof(bool?), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
 
-        public bool EnableSymbols
+        public bool? EnableSymbols
         {
-            get => (bool)GetValue(EnableSymbolsProperty);
+            get => (bool?)GetValue(EnableSymbolsProperty);
             set => SetValue(EnableSymbolsProperty, value);
         }
 
         public static readonly DependencyProperty EnableSymbolsProperty =
-            DependencyProperty.Register("EnableSymbols", typeof(bool), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
+            DependencyProperty.Register("EnableSymbols", typeof(bool?), typeof(MainPage), new PropertyMetadata(true, OnPropertyChanged));
 
-        public int Counter
+        public double Counter
         {
-            get => (int)GetValue(CounterProperty);
+            get => (double)GetValue(CounterProperty);
             set => SetValue(CounterProperty, value);
         }
 
         public static readonly DependencyProperty CounterProperty =
-            DependencyProperty.Register("Counter", typeof(int), typeof(MainPage), new PropertyMetadata(1, OnPropertyChanged));
+            DependencyProperty.Register("Counter", typeof(double), typeof(MainPage), new PropertyMetadata(1.0, OnPropertyChanged));
 
-        public int Iterations
+        public double Iterations
         {
-            get => (int)GetValue(IterationsProperty);
+            get => (double)GetValue(IterationsProperty);
             set => SetValue(IterationsProperty, value);
         }
 
         public static readonly DependencyProperty IterationsProperty =
-            DependencyProperty.Register("Iterations", typeof(int), typeof(MainPage), new PropertyMetadata(100_000, OnPropertyChanged));
+            DependencyProperty.Register("Iterations", typeof(double), typeof(MainPage), new PropertyMetadata(100_000.0, OnPropertyChanged));
         #endregion
 
         public bool IsValid => website.Length != 0 && username.Length != 0 && password.Length != 0;
 
         private Generator.Algorithms algorithm = Generator.Algorithms.Sha256;
+        private bool isRevealChecked;
         private string username = "";
         private string website = "";
         private string password = "";
@@ -176,10 +158,6 @@ namespace LessPass
             Instance = this;
 
             ElementSoundPlayer.State = ElementSoundPlayerState.On;
-
-            Application.Current.Resources["ToggleButtonBackgroundChecked"] = new SolidColorBrush(Colors.Transparent);
-            Application.Current.Resources["ToggleButtonBackgroundCheckedPointerOver"] = new SolidColorBrush(Colors.Transparent);
-            Application.Current.Resources["ToggleButtonBackgroundCheckedPressed"] = new SolidColorBrush(Colors.Transparent);
         }
 
         #region Event handlers
@@ -221,6 +199,38 @@ namespace LessPass
             OnInputChanged();
         }
 
+        private void AlgorithmChecked(object sender, RoutedEventArgs e)
+        {
+            algorithm = (Generator.Algorithms)int.Parse(((RadioButton)sender).Tag.ToString());
+
+            OnInputChanged();
+        }
+
+        private void RevealChecked(object sender, RoutedEventArgs e)
+        {
+            // ReSharper disable once PossibleInvalidOperationException
+            isRevealChecked = !isRevealChecked;
+
+            void TurnOffVisibility(object _, object __)
+            {
+                ResultBlock.Visibility = Visibility.Collapsed;
+                FadeOutStoryboard.Completed -= TurnOffVisibility;
+            }
+
+            if (isRevealChecked)
+            {
+                ResultBlock.Visibility = Visibility.Visible;
+                FadeInStoryboard.Begin();
+            }
+            else
+            {
+                FadeOutStoryboard.Begin();
+                FadeOutStoryboard.Completed += TurnOffVisibility;
+            }
+            
+            RevealIcon.Glyph = (isRevealChecked ? '\uEE65' : '\uEC20').ToString();
+        }
+
         private static void OnPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             (sender as MainPage)?.OnInputChanged();
@@ -234,19 +244,22 @@ namespace LessPass
                 cts.Dispose();
             }
 
+            if (isRevealChecked)
+                FadeOutStoryboard.Begin();
+
             cts = new CancellationTokenSource();
 
-            string salt = string.Concat(website, username, Counter.ToString("X"));
+            string salt = string.Concat(website, username, ((int)Counter).ToString("X"));
 
             Generator.CharSets charSets = Generator.CharSets.None;
 
-            if (EnableLowercase)
+            if (EnableLowercase.Value)
                 charSets |= Generator.CharSets.Lowercase;
-            if (EnableUppercase)
+            if (EnableUppercase.Value)
                 charSets |= Generator.CharSets.Uppercase;
-            if (EnableNumbers)
+            if (EnableNumbers.Value)
                 charSets |= Generator.CharSets.Numbers;
-            if (EnableSymbols)
+            if (EnableSymbols.Value)
                 charSets |= Generator.CharSets.Symbols;
 
             if (charSets == Generator.CharSets.None)
@@ -264,19 +277,25 @@ namespace LessPass
                 };
 
                 dialog.ShowAsync();
+                return;
             }
 
             updateTask = Generator.GenerateAsync(password, salt, charSets,
                                                  digest: algorithm,
-                                                 length: GeneratedPasswordLength,
+                                                 length: (int)GeneratedPasswordLength,
                                                  iterations: (uint)Iterations,
                                                  cancellationToken: cts.Token);
 
             updateTask.ConfigureAwait(true).GetAwaiter().OnCompleted(() =>
-                {
-                    if (updateTask.Status == TaskStatus.RanToCompletion)
-                        GeneratedPassword = updateTask.Result;
-                });
+            {
+                if (updateTask.Status != TaskStatus.RanToCompletion)
+                    return;
+
+                GeneratedPassword = updateTask.Result;
+
+                if (isRevealChecked)
+                    FadeInStoryboard.Begin();
+            });
         }
         #endregion
 
@@ -323,22 +342,6 @@ namespace LessPass
             Clipboard.SetContent(data);
         }
 
-        private void AlgorithmChecked(object sender, RoutedEventArgs e)
-        {
-            algorithm = (Generator.Algorithms)int.Parse(((RadioButton)sender).Tag.ToString());
-
-            OnInputChanged();
-        }
-
-        private void RevealChecked(object sender, RoutedEventArgs e)
-        {
-            // ReSharper disable once PossibleInvalidOperationException
-            bool isChecked = ((ToggleButton)sender).IsChecked.Value;
-
-            ResultBlock.Visibility = isChecked ? Visibility.Visible : Visibility.Collapsed;
-            RevealIcon.Glyph = (isChecked ? '\uEE65' : '\uEC20').ToString();
-        }
-
         public void SaveState(ApplicationDataContainer data)
         {
             data.Values[nameof(algorithm)] = (int)algorithm;
@@ -350,7 +353,7 @@ namespace LessPass
             data.Values[nameof(EnableSymbols)] = EnableSymbols;
 
             data.Values[nameof(Counter)] = Counter;
-            data.Values[nameof(RevealChecked)] = RevealButton.IsChecked;
+            data.Values[nameof(RevealChecked)] = isRevealChecked;
         }
 
         public void LoadState(ApplicationDataContainer data)
@@ -358,15 +361,15 @@ namespace LessPass
             if (data.Values.ContainsKey(nameof(algorithm)))
             {
                 algorithm = (Generator.Algorithms)(int)data.Values[nameof(algorithm)];
-                GeneratedPasswordLength = (int)data.Values[nameof(GeneratedPasswordLength)];
-                Iterations = (int)data.Values[nameof(Iterations)];
-                EnableLowercase = (bool)data.Values[nameof(EnableLowercase)];
-                EnableUppercase = (bool)data.Values[nameof(EnableUppercase)];
-                EnableNumbers = (bool)data.Values[nameof(EnableNumbers)];
-                EnableSymbols = (bool)data.Values[nameof(EnableSymbols)];
-                Counter = (int)data.Values[nameof(Counter)];
-
-                RevealButton.IsChecked = (bool)data.Values[nameof(RevealChecked)];
+                GeneratedPasswordLength = (double)data.Values[nameof(GeneratedPasswordLength)];
+                Iterations = (double)data.Values[nameof(Iterations)];
+                EnableLowercase = (bool?)data.Values[nameof(EnableLowercase)];
+                EnableUppercase = (bool?)data.Values[nameof(EnableUppercase)];
+                EnableNumbers = (bool?)data.Values[nameof(EnableNumbers)];
+                EnableSymbols = (bool?)data.Values[nameof(EnableSymbols)];
+                Counter = (double)data.Values[nameof(Counter)];
+                
+                isRevealChecked = !(bool)data.Values[nameof(RevealChecked)];
             }
             else
             {
@@ -379,8 +382,10 @@ namespace LessPass
                 EnableSymbols = true;
                 Counter = 1;
 
-                RevealButton.IsChecked = true;
+                isRevealChecked = false;
             }
+
+            RevealChecked(RevealButton, null);
 
             switch (algorithm)
             {

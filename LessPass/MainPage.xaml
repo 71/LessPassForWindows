@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:composition="using:LessPass.Composition"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -36,41 +35,57 @@
             <Setter Property="FontFamily" Value="Assets/Fonts/Nunito-Light.ttf#Nunito" />
             <Setter Property="Padding" Value="{ThemeResource InputPadding}" />
         </Style>
+
+        <AcrylicBrush x:Key="BackgroundAcrylicBrush" BackgroundSource="HostBackdrop"
+                      TintColor="#BB0D0D0D" TintOpacity="0.8" FallbackColor="#FF0D0D0D"/>
+        
+        <AcrylicBrush x:Key="FormBackgroundAcrylicBrush" BackgroundSource="HostBackdrop"
+                      TintColor="#EEFFFFFF" TintOpacity="0.8" FallbackColor="#FFEEEEEE" />
+        
+        <AcrylicBrush x:Key="AppBarBackgroundAcrylicBrush" BackgroundSource="HostBackdrop"
+                      TintColor="#FF000000" TintOpacity="0.7" FallbackColor="#FF0D0D0D"/>
     </Page.Resources>
 
-    <Grid SizeChanged="OnSizeChanged" Loaded="OnLoaded">
-        
-        <RelativePanel x:Name="BackgroundGrid" />
+    <Grid SizeChanged="OnSizeChanged" Loaded="OnLoaded"
+          Background="{StaticResource BackgroundAcrylicBrush}">
 
         <!-- Useless element there to nicely replace the title bar -->
         <Border x:Name="MainTitleBar" />
 
-        <Grid Background="#88000000">
+        <Grid>
+            <Grid.Resources>
+                <Storyboard x:Name="FadeOutStoryboard">
+                    <FadeOutThemeAnimation Storyboard.TargetName="ResultBlock" />
+                </Storyboard>
+
+                <Storyboard x:Name="FadeInStoryboard">
+                    <FadeInThemeAnimation Storyboard.TargetName="ResultBlock" />
+                </Storyboard>
+            </Grid.Resources>
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="100" />
+                <RowDefinition Height="*" MinHeight="200" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#FFFFFF">
-                <composition:CompositionShadow Color="Black" OffsetX="0" OffsetY="0" ShadowOpacity="0.6" BlurRadius="30">
-                    <StackPanel Background="#66FFFFFF" x:Name="InputPanel">
-                        <ToggleButton x:Name="RevealButton" Width="100" Checked="RevealChecked" Unchecked="RevealChecked"
-                                      Background="Transparent" IsChecked="False" ToolTipService.Placement="Bottom">
-                            <ToolTipService.ToolTip>
-                                <TextBlock x:Uid="ToggleTooltip" />
-                            </ToolTipService.ToolTip>
+            <Border Grid.Row="0">
+                <StackPanel Background="{StaticResource FormBackgroundAcrylicBrush}" x:Name="InputPanel">
+                    <Button x:Name="RevealButton" Width="100" Click="RevealChecked" Style="{StaticResource ButtonRevealStyle}"
+                            RequestedTheme="Light" Background="Transparent" ToolTipService.Placement="Bottom">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="ToggleTooltip" />
+                        </ToolTipService.ToolTip>
 
-                            <FontIcon x:Name="RevealIcon" />
-                        </ToggleButton>
+                        <FontIcon x:Name="RevealIcon" />
+                    </Button>
 
-                        <TextBox TextChanged="WebsiteChanged"
-                                 Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
-                        <TextBox TextChanged="UsernameChanged"
-                                 Style="{StaticResource InputText}" x:Uid="Login" InputScope="EmailNameOrAddress" />
-                        <PasswordBox PasswordChanged="PasswordChanged"
-                                     PasswordRevealMode="Peek" Style="{StaticResource InputPassword}" x:Uid="Password" />
-                    </StackPanel>
-                </composition:CompositionShadow>
+                    <TextBox TextChanged="WebsiteChanged"
+                             Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
+                    <TextBox TextChanged="UsernameChanged"
+                             Style="{StaticResource InputText}" x:Uid="Login" InputScope="EmailNameOrAddress" />
+                    <PasswordBox PasswordChanged="PasswordChanged"
+                                 PasswordRevealMode="Peek" Style="{StaticResource InputPassword}" x:Uid="Password" />
+                </StackPanel>
             </Border>
             
             <TextBlock Text="{x:Bind GeneratedPassword, Mode=OneWay}"
@@ -82,19 +97,46 @@
     </Grid>
 
     <Page.BottomAppBar>
-        <CommandBar IsDynamicOverflowEnabled="False">
+        <CommandBar IsDynamicOverflowEnabled="False"
+                    Background="{StaticResource AppBarBackgroundAcrylicBrush}">
+
+            <CommandBar.CommandBarOverflowPresenterStyle>
+                <Style TargetType="CommandBarOverflowPresenter">
+                    <Setter Property="Background" Value="{StaticResource AppBarBackgroundAcrylicBrush}" />
+                </Style>
+            </CommandBar.CommandBarOverflowPresenterStyle>
+
+            <CommandBar.Resources>
+                <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonRevealStyle}"
+                       x:Key="ToggleButton">
+                    <Setter Property="Width" Value="Auto" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+                
+                <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonRevealStyle}"
+                       x:Key="Button">
+                    <Setter Property="Width" Value="Auto" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </CommandBar.Resources>
+
             <AppBarButton x:Uid="Copy" x:Name="CopyButton" Icon="Copy" Click="CopyClick"
-                          IsEnabled="False" />
+                          IsEnabled="False" Width="{StaticResource AppBarThemeCompactHeight}" />
 
             <CommandBar.SecondaryCommands>
-                <AppBarToggleButton Label="a-z" IsChecked="{x:Bind EnableLowercase, Mode=TwoWay}" />
-                <AppBarToggleButton Label="A-Z" IsChecked="{x:Bind EnableUppercase, Mode=TwoWay}" />
-                <AppBarToggleButton Label="0-9" IsChecked="{x:Bind EnableNumbers, Mode=TwoWay}" />
-                <AppBarToggleButton Label=" ~ " IsChecked="{x:Bind EnableSymbols, Mode=TwoWay}" />
+                <AppBarToggleButton Label="a-z" IsChecked="{x:Bind EnableLowercase, Mode=TwoWay}"
+                                    Style="{StaticResource ToggleButton}" />
+                <AppBarToggleButton Label="A-Z" IsChecked="{x:Bind EnableUppercase, Mode=TwoWay}"
+                                    Style="{StaticResource ToggleButton}" />
+                <AppBarToggleButton Label="0-9" IsChecked="{x:Bind EnableNumbers, Mode=TwoWay}"
+                                    Style="{StaticResource ToggleButton}" />
+                <AppBarToggleButton Label=" ~ " IsChecked="{x:Bind EnableSymbols, Mode=TwoWay}"
+                                    Style="{StaticResource ToggleButton}" />
                 
                 <AppBarSeparator />
-                
-                <AppBarButton x:Uid="Counter">
+
+                <AppBarButton x:Uid="Counter" Style="{StaticResource Button}"
+                              HorizontalAlignment="Stretch">
                     <AppBarButton.Flyout>
                         <Flyout>
                             <Slider Minimum="1" Maximum="999" StepFrequency="1"
@@ -102,7 +144,8 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Uid="Iterations">
+                <AppBarButton x:Uid="Iterations" Style="{StaticResource Button}"
+                              HorizontalAlignment="Stretch">
                     <AppBarButton.Flyout>
                         <Flyout>
                             <Slider Minimum="1" Maximum="1000000" StepFrequency="10000"
@@ -110,7 +153,8 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Uid="Algorithm">
+                <AppBarButton x:Uid="Algorithm" Style="{StaticResource Button}"
+                              HorizontalAlignment="Stretch">
                     <AppBarButton.Flyout>
                         <Flyout>
                             <StackPanel>
@@ -128,7 +172,7 @@
 
                 <AppBarSeparator />
 
-                <AppBarButton x:Uid="Informations">
+                <AppBarButton x:Uid="Informations" Style="{StaticResource Button}">
                     <AppBarButton.Flyout>
                         <MenuFlyout>
                             <MenuFlyoutSubItem x:Uid="About">
@@ -143,11 +187,11 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Uid="InspiredBy" Click="InspiredByClick" />
+                <AppBarButton x:Uid="InspiredBy" Click="InspiredByClick" Style="{StaticResource Button}" />
             </CommandBar.SecondaryCommands>
 
             <CommandBar.Content>
-                <Slider Minimum="6" Maximum="42" StepFrequency="1" Value="{x:Bind GeneratedPasswordLength, Mode=TwoWay}"
+                <Slider Minimum="6" Maximum="40" StepFrequency="1" Value="{x:Bind GeneratedPasswordLength, Mode=TwoWay}"
                         Margin="30 5 30 0" Height="{StaticResource AppBarThemeCompactHeight}"
                         x:Name="LengthSlider" ToolTipService.Placement="Top">
                     <ToolTipService.ToolTip>
