@@ -1,10 +1,10 @@
 Less Pass
 =========
 
+An (unofficial) Windows 10 client for [lesspass](https://lesspass.com), in Fluent Design.
+
 ![Screenshot](Screenshot-0.png)
 ![Screenshot](Screenshot-1.png)
 
-An (unofficial) Windows 10 client for [lesspass](https://lesspass.com).
 
-## Note
-My VS installation is [completely fucked](https://social.msdn.microsoft.com/Forums/windowsserver/en-US/df85de3a-df51-4a66-ac0a-6ec96e0be217), and I thus **cannot** build LessPass for a full release. If anyone can do it for me, that'd be great.
+<a href="https://www.microsoft.com/store/apps/9PFTP5150DMB?ocid=badge"><img src="https://assets.windowsphone.com/85864462-9c82-451e-9355-a3d5f874397a/English_get-it-from-MS_InvariantCulture_Default.png" alt="Get it from Microsoft" /></a>

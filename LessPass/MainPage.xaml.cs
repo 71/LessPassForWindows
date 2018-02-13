@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
@@ -15,8 +16,9 @@ using Windows.UI.Xaml.Controls;
 namespace LessPass
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    ///   The main (and only) page of the application.
     /// </summary>
+    [SuppressMessage("Compiler", "CS4014")]
     public sealed partial class MainPage
     {
         public static MainPage Instance;
@@ -25,11 +27,10 @@ namespace LessPass
         {
             //// Apparently the app bar button's width is 40
             //// We have two buttons, plus a margin of 30 on each side
-            //// + 36 because my calculations suck
             //// https://msdn.microsoft.com/en-us/library/windows/apps/xaml/dn481531.aspx?f=255&MSPPError=-2147217396
-            const int MinusWidth = (40 * 2) + (30 * 2);
+            const int minusWidth = (40 * 2) + (30 * 2);
 
-            LengthSlider.Width = e.NewSize.Width - MinusWidth;
+            LengthSlider.Width = e.NewSize.Width - minusWidth;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
