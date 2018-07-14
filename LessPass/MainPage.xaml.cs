@@ -50,6 +50,8 @@ namespace LessPass
             coreTitleBar.ExtendViewIntoTitleBar = true;
 
             Window.Current.SetTitleBar(MainTitleBar);
+
+            WebsiteBox.Focus(FocusState.Programmatic);
         }
 
         private void OnLayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
@@ -305,6 +307,11 @@ namespace LessPass
             Launcher.LaunchUriAsync(new Uri("https://github.com/6A/LessPass"));
         }
 
+        private void PrivacyClick(object sender, RoutedEventArgs e)
+        {
+            Launcher.LaunchUriAsync(new Uri("https://github.com/6A/LessPass/blob/master/PRIVACY.md"));
+        }
+
         private void ContactClick(object sender, RoutedEventArgs e)
         {
             ResourceLoader loader = ResourceLoader.GetForCurrentView();
@@ -314,7 +321,7 @@ namespace LessPass
                 Body = loader.GetString("EmailBody")
             };
 
-            emailMessage.To.Add(new EmailRecipient("s.aej+lesspass@outlook.com"));
+            emailMessage.To.Add(new EmailRecipient("support+lesspass@gregoirege.is"));
 
             EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }

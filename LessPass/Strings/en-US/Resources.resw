@@ -177,6 +177,9 @@
   <data name="Password.PlaceholderText" xml:space="preserve">
     <value>Master Password</value>
   </data>
+  <data name="Privacy.Text" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
   <data name="Source.Text" xml:space="preserve">
     <value>Source code</value>
   </data>

@@ -79,7 +79,7 @@
                         <FontIcon x:Name="RevealIcon" />
                     </Button>
 
-                    <TextBox TextChanged="WebsiteChanged"
+                    <TextBox TextChanged="WebsiteChanged" x:Name="WebsiteBox"
                              Style="{StaticResource InputText}" x:Uid="Website" InputScope="Url" />
                     <TextBox TextChanged="UsernameChanged"
                              Style="{StaticResource InputText}" x:Uid="Login" InputScope="EmailNameOrAddress" />
@@ -177,6 +177,7 @@
                         <MenuFlyout>
                             <MenuFlyoutSubItem x:Uid="About">
                                 <MenuFlyoutItem x:Uid="Source" Click="GitHubClick" />
+                                <MenuFlyoutItem x:Uid="Privacy" Click="PrivacyClick" />
                                 <MenuFlyoutItem x:Uid="Contact" Click="ContactClick" />
                             </MenuFlyoutSubItem>
 
